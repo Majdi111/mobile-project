@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "524077860902",
+    "project_id": "glow-2aa42",
+    "storage_bucket": "glow-2aa42.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524077860902:android:4e3d9e3511797a5ded7ee7",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCarxvMwKxvCRc-nSuTsk2u12Dw70ip-48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524077860902:android:5428d5693b2f47b1ed7ee7",
+        "android_client_info": {
+          "package_name": "com.glowapp.glow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCarxvMwKxvCRc-nSuTsk2u12Dw70ip-48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
