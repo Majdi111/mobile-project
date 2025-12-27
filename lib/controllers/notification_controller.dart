@@ -185,7 +185,7 @@ class NotificationController {
   Future<void> checkUpcomingBookings() async {
     try {
       final now = DateTime.now();
-      final oneHourLater = now.add(const Duration(hours: 1));
+
 
       // Get all confirmed bookings that are upcoming
       final bookings = await _db

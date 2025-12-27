@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/booking_controller.dart';
 import '../controllers/notification_controller.dart';
@@ -214,161 +215,261 @@ class _ClientDashboardState extends State<ClientDashboard> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Client Dashboard'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _notificationController.getUserNotifications(user.uid),
-            builder: (context, snapshot) {
-              final unreadCount = (snapshot.data ?? [])
-                  .where((n) => n['is_read'] == false)
-                  .length;
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (unreadCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          unreadCount > 9 ? '9+' : unreadCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF8F9FA), Color(0xFFFFFFFF)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () async => setState(() {}),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 60, 16, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    _buildSearchBar(),
+                    const SizedBox(height: 24),
+
+                    // User Profile Section - Dynamic from DB
+                    _buildUserProfileSection(user.uid),
+                    const SizedBox(height: 28),
+
+                    // Stats Section - Dynamic from DB
+                    _buildStatsSection(user.uid),
+                    const SizedBox(height: 28),
+
+                    // Quick Actions
+                    Text(
+                      'Quick Actions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.grey[800],
                       ),
                     ),
-                ],
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await _authController.signOut();
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-            },
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: () async {
-              setState(() {});
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Search Bar
-                  _buildSearchBar(),
-                  const SizedBox(height: 16),
-
-                  // User Profile Section - Dynamic from DB
-                  _buildUserProfileSection(user.uid),
-                  const SizedBox(height: 24),
-
-                  // Stats Section - Dynamic from DB
-                  _buildStatsSection(user.uid),
-                  const SizedBox(height: 24),
-
-                  // Quick Actions
-                  const Text(
-                    'Quick Actions',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: Icons.add_circle_outline,
-                          label: 'New Booking',
-                          color: Colors.purple,
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/create-booking'),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionCard(
+                            icon: Icons.add_rounded,
+                            label: 'New Booking',
+                            gradient: LinearGradient(
+                              colors: [Colors.purple[400]!, Colors.purple[600]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/create-booking'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: Icons.search,
-                          label: 'Browse Services',
-                          color: Colors.blue,
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/browse-services'),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionCard(
+                            icon: Icons.search_rounded,
+                            label: 'Browse Services',
+                            gradient: LinearGradient(
+                              colors: [Colors.blue[400]!, Colors.blue[600]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/browse-services'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildActionCard(
-                          icon: Icons.bookmark_outline,
-                          label: 'My Bookings',
-                          color: Colors.green,
-                          onTap: () => Navigator.pushNamed(context, '/my-bookings'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionCard(
+                            icon: Icons.bookmark_rounded,
+                            label: 'My Bookings',
+                            gradient: LinearGradient(
+                              colors: [Colors.green[400]!, Colors.green[600]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            onTap: () => Navigator.pushNamed(context, '/my-bookings'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(), // Empty space for symmetry
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionCard(
+                            icon: Icons.history_rounded,
+                            label: 'History',
+                            gradient: LinearGradient(
+                              colors: [Colors.orange[400]!, Colors.orange[600]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            onTap: () => Navigator.pushNamed(context, '/my-bookings'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
 
-                  // Categories Section
-                  _buildCategoriesSection(),
-                  const SizedBox(height: 24),
+                    // Categories Section
+                    _buildCategoriesSection(),
+                    const SizedBox(height: 28),
 
-                  // Favorite Providers - Dynamic from DB
-                  _buildFavoriteProvidersSection(user.uid),
-                  const SizedBox(height: 24),
+                    // Favorite Providers - Dynamic from DB
+                    _buildFavoriteProvidersSection(user.uid),
+                    const SizedBox(height: 28),
 
-                  // Upcoming Bookings - Dynamic from DB
-                  _buildUpcomingBookingsSection(user.uid),
-                  const SizedBox(height: 24),
+                    // Upcoming Bookings - Dynamic from DB
+                    _buildUpcomingBookingsSection(user.uid),
+                    const SizedBox(height: 28),
 
-                  // Available Providers - Dynamic from DB
-                  _buildAvailableProvidersSection(),
-                ],
+                    // Available Providers - Dynamic from DB
+                    _buildAvailableProvidersSection(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Search Results Overlay
-          if (_showSearchResults) _buildSearchResults(),
+            // Search Results Overlay
+            if (_showSearchResults) _buildSearchResults(),
+
+            // Modern Top App Bar
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _buildModernTopBar(user),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernTopBar(User user) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top,
+        left: 16,
+        right: 16,
+        bottom: 12,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.grey[900],
+                ),
+              ),
+              Text(
+                'Welcome back!',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _notificationController.getUserNotifications(user.uid),
+                builder: (context, snapshot) {
+                  final unreadCount = (snapshot.data ?? [])
+                      .where((n) => n['is_read'] == false)
+                      .length;
+                  return Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.notifications_rounded, size: 22),
+                          color: Colors.grey[700],
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      if (unreadCount > 0)
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.red[400]!, Colors.red[600]!],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.4),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Text(
+                              unreadCount > 9 ? '9+' : unreadCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.logout_rounded, size: 22),
+                  color: Colors.grey[700],
+                  onPressed: () async {
+                    await _authController.signOut();
+                    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                  },
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -378,12 +479,13 @@ class _ClientDashboardState extends State<ClientDashboard> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -394,10 +496,11 @@ class _ClientDashboardState extends State<ClientDashboard> {
         },
         decoration: InputDecoration(
           hintText: 'Search providers or services...',
-          prefixIcon: const Icon(Icons.search, color: Colors.blue),
+          prefixIcon: Icon(Icons.search_rounded, color: Colors.purple[400]),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  icon: const Icon(Icons.close_rounded),
+                  color: Colors.grey[400],
                   onPressed: () {
                     _searchController.clear();
                     _performSearch('');
@@ -405,15 +508,23 @@ class _ClientDashboardState extends State<ClientDashboard> {
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
+            horizontal: 16,
+            vertical: 14,
           ),
+          hintStyle: TextStyle(
+            color: Colors.grey[500],
+            fontSize: 15,
+          ),
+        ),
+        style: const TextStyle(
+          fontSize: 15,
+          color: Colors.black87,
         ),
       ),
     );
@@ -609,23 +720,46 @@ class _ClientDashboardState extends State<ClientDashboard> {
           elevation: 4,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue[50]!, Colors.blue[100]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.all(18),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundColor: Colors.blue[100],
-                  backgroundImage: profileImage.isNotEmpty
-                      ? NetworkImage(profileImage)
-                      : null,
-                  child: profileImage.isEmpty
-                      ? Text(
-                          (userName.isNotEmpty && userName.length > 0) ? userName[0].toUpperCase() : 'C',
-                          style: const TextStyle(
-                              fontSize: 28, fontWeight: FontWeight.bold),
-                        )
-                      : null,
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue[400]!, Colors.blue[600]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.4),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      (userName.isNotEmpty && userName.length > 0) ? userName[0].toUpperCase() : 'C',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -634,16 +768,27 @@ class _ClientDashboardState extends State<ClientDashboard> {
                     children: [
                       Text(
                         'Welcome back,',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       Text(
                         userName,
                         style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
                       ),
                       Text(
                         email,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ],
                   ),
@@ -689,7 +834,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
               children: [
                 Expanded(
                   child: _buildStatCard(
-                    icon: Icons.calendar_today,
+                    icon: Icons.calendar_month_rounded,
                     label: 'Total Bookings',
                     value: totalBookings.toString(),
                     color: Colors.blue,
@@ -698,7 +843,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
-                    icon: Icons.pending_actions,
+                    icon: Icons.schedule_rounded,
                     label: 'Pending',
                     value: pendingBookings.toString(),
                     color: Colors.orange,
@@ -711,7 +856,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
               children: [
                 Expanded(
                   child: _buildStatCard(
-                    icon: Icons.check_circle,
+                    icon: Icons.check_circle_rounded,
                     label: 'Completed',
                     value: completedBookings.toString(),
                     color: Colors.green,
@@ -720,7 +865,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
-                    icon: Icons.attach_money,
+                    icon: Icons.attach_money_rounded,
                     label: 'Total Spent',
                     value: '${totalSpent.toStringAsFixed(0)} TND',
                     color: Colors.purple,
@@ -742,13 +887,24 @@ class _ClientDashboardState extends State<ClientDashboard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Upcoming Bookings',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.grey[800],
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/my-bookings'),
-              child: const Text('View All'),
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  color: Colors.purple,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ],
         ),
@@ -766,21 +922,30 @@ class _ClientDashboardState extends State<ClientDashboard> {
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.event_busy,
-                            size: 48, color: Colors.grey[400]),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No upcoming bookings',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
+              return Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      spreadRadius: 1,
                     ),
+                  ],
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.event_busy_rounded,
+                          size: 48, color: Colors.grey[300]),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No upcoming bookings',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -852,11 +1017,15 @@ class _ClientDashboardState extends State<ClientDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Browse by Category',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Colors.grey[800],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -947,15 +1116,19 @@ class _ClientDashboardState extends State<ClientDashboard> {
           children: [
             Row(
               children: [
-                const Icon(Icons.favorite, color: Colors.red, size: 24),
+                const Icon(Icons.favorite_rounded, color: Colors.red, size: 24),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Favorite Providers',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey[800],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             SizedBox(
               height: 120,
               child: ListView.builder(
@@ -1076,11 +1249,15 @@ class _ClientDashboardState extends State<ClientDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Top Providers',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Colors.grey[800],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot>(
           stream: _db.collection('providers').orderBy('rating', descending: true).limit(3).snapshots(),
           builder: (context, snapshot) {
@@ -1213,30 +1390,55 @@ class _ClientDashboardState extends State<ClientDashboard> {
     required String value,
     required Color color,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.8), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 16,
+            spreadRadius: 2,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(10),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -1244,27 +1446,52 @@ class _ClientDashboardState extends State<ClientDashboard> {
   Widget _buildActionCard({
     required IconData icon,
     required String label,
-    required Color color,
+    required LinearGradient gradient,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 16,
+            spreadRadius: 2,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(icon, color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontSize: 14,
+                    letterSpacing: 0.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),

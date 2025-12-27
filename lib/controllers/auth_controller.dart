@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geolocator/geolocator.dart';
 
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -82,37 +81,6 @@ class AuthController {
       return {'success': false, 'error': 'Error: $e'};
     }
   }
-
-  // ============================================
-  // GET CURRENT GPS LOCATION
-  // ============================================
-  Future<Map<String, dynamic>?> _getCurrentLocation() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return null;
-        }
-      }
-      
-      if (permission == LocationPermission.deniedForever) {
-        return null;
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      
-      return {
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-      };
-    } catch (e) {
-      return null;
-    }
-  }
-
   // ============================================
   // SIGN IN - Fetch from correct collection ⭐
   // ============================================

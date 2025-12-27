@@ -25,34 +25,61 @@ class _ClientMainPageState extends State<ClientMainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 20,
+              spreadRadius: 2,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: Colors.purple[600],
+          unselectedItemColor: Colors.grey[400],
+          selectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Agenda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Account',
-          ),
-        ],
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded, size: 26),
+              activeIcon: Icon(Icons.home_rounded, size: 26),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.location_on_rounded, size: 26),
+              activeIcon: Icon(Icons.location_on_rounded, size: 26),
+              label: 'Map',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month_rounded, size: 26),
+              activeIcon: Icon(Icons.calendar_month_rounded, size: 26),
+              label: 'Agenda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded, size: 26),
+              activeIcon: Icon(Icons.person_rounded, size: 26),
+              label: 'Account',
+            ),
+          ],
+        ),
       ),
     );
   }

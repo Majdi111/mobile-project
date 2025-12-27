@@ -601,6 +601,97 @@ class _ProviderAccountPageState extends State<ProviderAccountPage> {
     );
   }
 
+  void _editWorkingHours(String uid, int startingHour, int closingHour) {
+    int newStartHour = startingHour;
+    int newEndHour = closingHour;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Working Hours'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<int>(
+                value: newStartHour,
+                decoration: const InputDecoration(
+                  labelText: 'Starting Hour',
+                  prefixIcon: Icon(Icons.access_time),
+                  border: OutlineInputBorder(),
+                ),
+                items: List.generate(24, (index) => index)
+                    .map((hour) => DropdownMenuItem(
+                          value: hour,
+                          child: Text('${hour.toString().padLeft(2, '0')}:00'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    newStartHour = value;
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                value: newEndHour,
+                decoration: const InputDecoration(
+                  labelText: 'Closing Hour',
+                  prefixIcon: Icon(Icons.access_time_filled),
+                  border: OutlineInputBorder(),
+                ),
+                items: List.generate(24, (index) => index)
+                    .map((hour) => DropdownMenuItem(
+                          value: hour,
+                          child: Text('${hour.toString().padLeft(2, '0')}:00'),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    newEndHour = value;
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (newEndHour > newStartHour) {
+                await _db.collection('providers').doc(uid).update({
+                  'starting_hour': newStartHour,
+                  'closing_hour': newEndHour,
+                });
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Working hours updated')),
+                  );
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Closing hour must be after starting hour')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _updateLocationWithGPS(String uid) async {
     // Show loading dialog
     showDialog(

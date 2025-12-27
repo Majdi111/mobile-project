@@ -723,35 +723,12 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (!isOpenToday) ...[
-                  Card(
-                    color: Colors.orange[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.orange[700]),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Provider is not available on this day',
-                              style: TextStyle(
-                                color: Colors.orange[900],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  const Text(
-                    'Available time slots:',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
+                const Text(
+                  'Available time slots:',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: _availableTimeSlots.map((time) {
@@ -843,25 +820,23 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (isOpenToday) ...[
-                          Row(
-                            children: [
-                              Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Working hours: $startTime - $endTime',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Working hours: $startTime - $endTime',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontStyle: FontStyle.italic,
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                        ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
                         if (isToday)
                           Row(
                             children: [
@@ -898,7 +873,6 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                       ],
                     ),
                   ),
-                ],
               ],
             );
           },

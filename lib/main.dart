@@ -22,20 +22,20 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   // Start notification checker
   _startNotificationChecker();
-  
+
   runApp(const GlowApp());
 }
 
 // Background task to check for upcoming bookings every 10 minutes
 void _startNotificationChecker() {
   final notificationController = NotificationController();
-  
+
   // Run immediately on start
   notificationController.checkUpcomingBookings();
-  
+
   // Then run every 10 minutes
   Timer.periodic(const Duration(minutes: 10), (timer) {
     notificationController.checkUpcomingBookings();
@@ -51,7 +51,10 @@ class GlowApp extends StatelessWidget {
       title: 'Glow',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.purple,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue.shade900,
+        ),
         fontFamily: 'Poppins',
       ),
       initialRoute: '/splash',
