@@ -216,123 +216,60 @@ class _ClientDashboardState extends State<ClientDashboard> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF8F9FA), Color(0xFFFFFFFF)],
-          ),
-        ),
+        color: const Color(0xFFFAFAFC),
         child: Stack(
           children: [
             RefreshIndicator(
               onRefresh: () async => setState(() {}),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 60, 16, 20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Search Bar
-                    _buildSearchBar(),
-                    const SizedBox(height: 24),
+                    // Header Section
+                    _buildModernHeader(user),
 
-                    // User Profile Section - Dynamic from DB
-                    _buildUserProfileSection(user.uid),
-                    const SizedBox(height: 28),
+                    // Main Content
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 24),
 
-                    // Stats Section - Dynamic from DB
-                    _buildStatsSection(user.uid),
-                    const SizedBox(height: 28),
+                          // Welcome Section with Avatar
+                          _buildWelcomeSection(user.uid),
+                          const SizedBox(height: 24),
 
-                    // Quick Actions
-                    Text(
-                      'Quick Actions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.grey[800],
+                          // Search Bar
+                          _buildSearchBar(),
+                          const SizedBox(height: 28),
+
+                          // Statistics Cards Section
+                          _buildStatisticsSection(user.uid),
+                          const SizedBox(height: 32),
+
+                          // Categories Section
+                          _buildCategoriesSection(),
+                          const SizedBox(height: 32),
+
+                          // Quick Actions
+                          _buildQuickActionsSection(),
+                          const SizedBox(height: 32),
+
+                          // Favorite Providers - Dynamic from DB
+                          _buildFavoriteProvidersSection(user.uid),
+                          const SizedBox(height: 28),
+
+                          // Upcoming Bookings - Dynamic from DB
+                          _buildUpcomingBookingsSection(user.uid),
+                          const SizedBox(height: 28),
+
+                          // Available Providers - Dynamic from DB
+                          _buildAvailableProvidersSection(),
+                          const SizedBox(height: 30),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: Icons.add_rounded,
-                            label: 'New Booking',
-                            gradient: LinearGradient(
-                              colors: [Colors.purple[400]!, Colors.purple[600]!],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/create-booking'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: Icons.search_rounded,
-                            label: 'Browse Services',
-                            gradient: LinearGradient(
-                              colors: [Colors.blue[400]!, Colors.blue[600]!],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/browse-services'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: Icons.bookmark_rounded,
-                            label: 'My Bookings',
-                            gradient: LinearGradient(
-                              colors: [Colors.green[400]!, Colors.green[600]!],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            onTap: () => Navigator.pushNamed(context, '/my-bookings'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActionCard(
-                            icon: Icons.history_rounded,
-                            label: 'History',
-                            gradient: LinearGradient(
-                              colors: [Colors.orange[400]!, Colors.orange[600]!],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            onTap: () => Navigator.pushNamed(context, '/my-bookings'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Categories Section
-                    _buildCategoriesSection(),
-                    const SizedBox(height: 28),
-
-                    // Favorite Providers - Dynamic from DB
-                    _buildFavoriteProvidersSection(user.uid),
-                    const SizedBox(height: 28),
-
-                    // Upcoming Bookings - Dynamic from DB
-                    _buildUpcomingBookingsSection(user.uid),
-                    const SizedBox(height: 28),
-
-                    // Available Providers - Dynamic from DB
-                    _buildAvailableProvidersSection(),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -340,13 +277,481 @@ class _ClientDashboardState extends State<ClientDashboard> {
 
             // Search Results Overlay
             if (_showSearchResults) _buildSearchResults(),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Modern Top App Bar
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildModernTopBar(user),
+  // Modern Header with Gradient Background
+  Widget _buildModernHeader(User user) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.purple[600]!,
+            Colors.purple[500]!,
+          ],
+        ),
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 12,
+        left: 16,
+        right: 16,
+        bottom: 20,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Beauty & Services',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _notificationController.getUserNotifications(user.uid),
+            builder: (context, snapshot) {
+              final unreadCount = (snapshot.data ?? [])
+                  .where((n) => n['is_read'] == false)
+                  .length;
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsPage(),
+                    ),
+                  );
+                },
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red[400],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            unreadCount > 9 ? '9+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Welcome Section with Avatar
+  Widget _buildWelcomeSection(String uid) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _db.collection('clients').doc(uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 80,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+        final fullName = data['full_name'] ?? 'Client';
+        final email = data['email'] ?? 'welcome@app.com';
+        final firstLetter =
+            fullName.isNotEmpty ? fullName[0].toUpperCase() : 'C';
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.blue[400]!, Colors.purple[500]!],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    firstLetter,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back!',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      fullName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.grey[900],
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      email,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Statistics Section with 4 Cards
+  Widget _buildStatisticsSection(String uid) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _db
+          .collection('bookings')
+          .where('client_id', isEqualTo: uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 220,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final bookings = snapshot.data?.docs ?? [];
+        final totalBookings = bookings.length;
+        final pendingBookings = bookings
+            .where((b) =>
+                (b.data() as Map<String, dynamic>)['status'] == 'pending')
+            .length;
+        final completedBookings = bookings
+            .where((b) =>
+                (b.data() as Map<String, dynamic>)['status'] == 'completed')
+            .length;
+        final totalSpent = bookings.fold<double>(0, (sum, b) {
+          final amount = (b.data() as Map<String, dynamic>)['total_price'] ?? 0;
+          return sum + (amount is num ? amount.toDouble() : 0);
+        });
+
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.calendar_today_rounded,
+                    label: 'Total Bookings',
+                    value: totalBookings.toString(),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.blue[400]!, Colors.blue[600]!],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.schedule_rounded,
+                    label: 'Pending',
+                    value: pendingBookings.toString(),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.orange[400]!, Colors.orange[600]!],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.check_circle_rounded,
+                    label: 'Completed',
+                    value: completedBookings.toString(),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.green[400]!, Colors.green[600]!],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.wallet_rounded,
+                    label: 'Total Spent',
+                    value: '${totalSpent.toStringAsFixed(0)} TND',
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.purple[400]!, Colors.purple[600]!],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Individual Stat Card
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required LinearGradient gradient,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Quick Actions Section
+  Widget _buildQuickActionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Colors.grey[900],
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.add_rounded,
+                label: 'New Booking',
+                color: Colors.purple[500]!,
+                onTap: () => Navigator.pushNamed(context, '/create-booking'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.search_rounded,
+                label: 'Browse',
+                color: Colors.blue[500]!,
+                onTap: () => Navigator.pushNamed(context, '/browse-services'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.bookmark_rounded,
+                label: 'My Bookings',
+                color: Colors.green[500]!,
+                onTap: () => Navigator.pushNamed(context, '/my-bookings'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.history_rounded,
+                label: 'History',
+                color: Colors.orange[500]!,
+                onTap: () => Navigator.pushNamed(context, '/my-bookings'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey[800],
+              ),
             ),
           ],
         ),
@@ -483,9 +888,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -495,36 +899,42 @@ class _ClientDashboardState extends State<ClientDashboard> {
           _performSearch(value);
         },
         decoration: InputDecoration(
-          hintText: 'Search providers or services...',
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.purple[400]),
+          hintText: 'Search services, providers...',
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: Colors.grey[500],
+            size: 20,
+          ),
           suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  color: Colors.grey[400],
-                  onPressed: () {
+              ? GestureDetector(
+                  onTap: () {
                     _searchController.clear();
                     _performSearch('');
                   },
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Colors.grey[400],
+                    size: 18,
+                  ),
                 )
               : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
+          border: InputBorder.none,
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+            horizontal: 14,
+            vertical: 12,
           ),
           hintStyle: TextStyle(
             color: Colors.grey[500],
-            fontSize: 15,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        style: const TextStyle(
-          fontSize: 15,
-          color: Colors.black87,
+        style: TextStyle(
+          fontSize: 14,
+          color: Colors.grey[900],
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -1439,6 +1849,141 @@ class _ClientDashboardState extends State<ClientDashboard> {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _showSearchResults = false;
+          });
+        },
+        child: Container(
+          color: Colors.black.withOpacity(0.4),
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              margin: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.08),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Colors.blue, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _isSearching
+                                ? 'Searching...'
+                                : _searchResults.isEmpty
+                                    ? 'No results found'
+                                    : '${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'} found',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey[900],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _showSearchResults = false;
+                              _searchController.clear();
+                            });
+                          },
+                          child: const Icon(Icons.close_rounded, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: _isSearching
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : ListView.separated(
+                            itemCount: _searchResults.length,
+                            separatorBuilder: (context, index) =>
+                                Divider(color: Colors.grey[200], height: 1),
+                            itemBuilder: (context, index) {
+                              final result = _searchResults[index];
+                              final isProvider = result['type'] == 'provider';
+
+                              return ListTile(
+                                onTap: () {
+                                  if (isProvider) {
+                                    _navigateToProvider(
+                                      result['id'],
+                                      result['data'],
+                                    );
+                                  }
+                                },
+                                leading: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: isProvider
+                                        ? Colors.blue.withOpacity(0.1)
+                                        : Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    isProvider ? Icons.person_rounded : Icons.cut_rounded,
+                                    color: isProvider ? Colors.blue : Colors.green,
+                                    size: 22,
+                                  ),
+                                ),
+                                title: Text(
+                                  result['title'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  result['subtitle'],
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: Colors.grey[400],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
