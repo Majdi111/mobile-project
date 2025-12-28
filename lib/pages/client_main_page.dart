@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
 import 'client_dashboard.dart';
 import 'providers_map_page.dart';
 import 'agenda_page.dart';
@@ -23,62 +25,101 @@ class _ClientMainPageState extends State<ClientMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, -8),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 20,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: NavigationBarTheme(
+                  data: NavigationBarThemeData(
+                    backgroundColor: Colors.white.withValues(alpha: 0.95),
+                    indicatorColor: Colors.purple[100],
+                    indicatorShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                    labelTextStyle:
+                        WidgetStateProperty.resolveWith<TextStyle>((states) {
+                      final selected = states.contains(WidgetState.selected);
+                      return TextStyle(
+                        fontSize: selected ? 12 : 11,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                        color: selected ? Colors.purple[600] : Colors.grey[500],
+                      );
+                    }),
+                    iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+                        (states) {
+                      final selected = states.contains(WidgetState.selected);
+                      return IconThemeData(
+                        size: 26,
+                        color: selected ? Colors.purple[600] : Colors.grey[400],
+                      );
+                    }),
+                  ),
+                  child: NavigationBar(
+                    height: 70,
+                    selectedIndex: _currentIndex,
+                    labelBehavior:
+                        NavigationDestinationLabelBehavior.onlyShowSelected,
+                    destinations: [
+                      NavigationDestination(
+                        icon: const Icon(Icons.home_outlined),
+                        selectedIcon: const Icon(Icons.home_rounded),
+                        label: 'Home',
+                      ),
+                      NavigationDestination(
+                        icon: const Icon(Icons.location_on_outlined),
+                        selectedIcon: const Icon(Icons.location_on_rounded),
+                        label: 'GPS',
+                      ),
+                      NavigationDestination(
+                        icon: const Icon(Icons.calendar_month_outlined),
+                        selectedIcon: const Icon(Icons.calendar_month_rounded),
+                        label: 'Agenda',
+                      ),
+                      NavigationDestination(
+                        icon: const Icon(Icons.person_outline_rounded),
+                        selectedIcon: const Icon(Icons.person_rounded),
+                        label: 'Account',
+                      ),
+                    ],
+                    onDestinationSelected: (index) {
+                      if (index == _currentIndex) return;
+                      HapticFeedback.selectionClick();
+                      setState(() => _currentIndex = index);
+                    },
+                  ),
+                ),
+              ),
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: Colors.purple[600],
-          unselectedItemColor: Colors.grey[400],
-          selectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded, size: 26),
-              activeIcon: Icon(Icons.home_rounded, size: 26),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.location_on_rounded, size: 26),
-              activeIcon: Icon(Icons.location_on_rounded, size: 26),
-              label: 'Map',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month_rounded, size: 26),
-              activeIcon: Icon(Icons.calendar_month_rounded, size: 26),
-              label: 'Agenda',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded, size: 26),
-              activeIcon: Icon(Icons.person_rounded, size: 26),
-              label: 'Account',
-            ),
-          ],
         ),
       ),
     );

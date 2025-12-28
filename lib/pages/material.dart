@@ -58,7 +58,7 @@ class UserTypePage extends StatelessWidget {
                 title: 'I am a Provider',
                 subtitle: 'Manage my barbershop services',
                 color: Colors.green,
-                userType: 'provider',  // ⭐ Pass userType
+                userType: 'provider',  //  Pass userType
               ),
               SizedBox(height: 40),
 
@@ -89,13 +89,13 @@ class UserTypePage extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color color,
-    required String userType,  // ⭐ userType parameter
+    required String userType,  // userType parameter
   }) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          // ⭐ Navigate to Sign Up with userType
+          //  Navigate to Sign Up with userType
           Navigator.pushNamed(
             context,
             '/sign-up',
@@ -150,7 +150,7 @@ class UserTypePage extends StatelessWidget {
     );
   }
 
-  // ⭐ Dialog for Sign In - Ask user type first
+  //  Dialog for Sign In - Ask user type first
   void _showSignInTypeDialog(BuildContext context) {
     showDialog(
       context: context,

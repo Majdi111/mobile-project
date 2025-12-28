@@ -19,10 +19,11 @@ class ClientDashboard extends StatefulWidget {
 class _ClientDashboardState extends State<ClientDashboard> {
   final AuthController _authController = AuthController();
   final BookingController _bookingController = BookingController();
-  final NotificationController _notificationController = NotificationController();
+  final NotificationController _notificationController =
+      NotificationController();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   bool _showSearchResults = false;
@@ -115,9 +116,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
       final results = <Map<String, dynamic>>[];
 
       // Search providers by name
-      final providersSnapshot = await _db
-          .collection('providers')
-          .get();
+      final providersSnapshot = await _db.collection('providers').get();
 
       for (var doc in providersSnapshot.docs) {
         final data = doc.data();
@@ -146,16 +145,19 @@ class _ClientDashboardState extends State<ClientDashboard> {
 
       for (var doc in servicesSnapshot.docs) {
         final data = doc.data();
-        final serviceName = (data['service_name'] ?? '').toString().toLowerCase();
+        final serviceName =
+            (data['service_name'] ?? '').toString().toLowerCase();
         final category = (data['category'] ?? '').toString().toLowerCase();
-        final description = (data['description'] ?? '').toString().toLowerCase();
+        final description =
+            (data['description'] ?? '').toString().toLowerCase();
 
         if (serviceName.contains(lowerQuery) ||
             category.contains(lowerQuery) ||
             description.contains(lowerQuery)) {
           // Get provider info for this service
           final providerId = data['provider_id'];
-          final providerDoc = await _db.collection('users').doc(providerId).get();
+          final providerDoc =
+              await _db.collection('users').doc(providerId).get();
           final providerData = providerDoc.data() ?? {};
 
           results.add({
@@ -163,7 +165,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
             'id': doc.id,
             'providerId': providerId,
             'title': data['service_name'] ?? 'Service',
-            'subtitle': '${data['provider_name'] ?? 'Provider'} • ${data['price']} TND',
+            'subtitle':
+                '${data['provider_name'] ?? 'Provider'} • ${data['price']} TND',
             'category': data['category'] ?? '',
             'data': data,
             'providerData': providerData,
@@ -188,7 +191,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
     }
   }
 
-  void _navigateToProvider(String providerId, Map<String, dynamic> providerData) {
+  void _navigateToProvider(
+      String providerId, Map<String, dynamic> providerData) {
     setState(() {
       _showSearchResults = false;
       _searchController.clear();
@@ -215,174 +219,191 @@ class _ClientDashboardState extends State<ClientDashboard> {
     }
 
     return Scaffold(
-      body: Container(
-        color: const Color(0xFFFAFAFC),
-        child: Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: () async => setState(() {}),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    // Header Section
-                    _buildModernHeader(user),
-
-                    // Main Content
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-
-                          // Welcome Section with Avatar
-                          _buildWelcomeSection(user.uid),
-                          const SizedBox(height: 24),
-
-                          // Search Bar
-                          _buildSearchBar(),
-                          const SizedBox(height: 28),
-
-                          // Statistics Cards Section
-                          _buildStatisticsSection(user.uid),
-                          const SizedBox(height: 32),
-
-                          // Categories Section
-                          _buildCategoriesSection(),
-                          const SizedBox(height: 32),
-
-                          // Quick Actions
-                          _buildQuickActionsSection(),
-                          const SizedBox(height: 32),
-
-                          // Favorite Providers - Dynamic from DB
-                          _buildFavoriteProvidersSection(user.uid),
-                          const SizedBox(height: 28),
-
-                          // Upcoming Bookings - Dynamic from DB
-                          _buildUpcomingBookingsSection(user.uid),
-                          const SizedBox(height: 28),
-
-                          // Available Providers - Dynamic from DB
-                          _buildAvailableProvidersSection(),
-                          const SizedBox(height: 30),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Search Results Overlay
-            if (_showSearchResults) _buildSearchResults(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Modern Header with Gradient Background
-  Widget _buildModernHeader(User user) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.purple[600]!,
-            Colors.purple[500]!,
-          ],
-        ),
-      ),
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
-        left: 16,
-        right: 16,
-        bottom: 20,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: Stack(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Dashboard',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
+          CustomScrollView(
+            slivers: [
+              // Modern App Bar with rounded bottom
+              SliverAppBar(
+                expandedHeight: 120,
+                floating: false,
+                pinned: true,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.blue[900]!, Colors.blue[800]!],
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(28),
+                        bottomRight: Radius.circular(28),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withValues(alpha: 0.2),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dashboard',
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Beauty & Services',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              StreamBuilder<List<Map<String, dynamic>>>(
+                                stream: _notificationController
+                                    .getUserNotifications(user.uid),
+                                builder: (context, snapshot) {
+                                  final unreadCount = (snapshot.data ?? [])
+                                      .where((n) => n['is_read'] == false)
+                                      .length;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const NotificationsPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(
+                                            Icons.notifications_rounded,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        if (unreadCount > 0)
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                unreadCount.toString(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+                  title: null,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Beauty & Services',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w500,
+
+              // Main Content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+
+                      // Welcome Section with Avatar
+                      _buildWelcomeSection(user.uid),
+                      const SizedBox(height: 24),
+
+                      // Search Bar
+                      _buildSearchBar(),
+                      const SizedBox(height: 28),
+
+                      // Statistics Cards Section
+                      _buildStatisticsSection(user.uid),
+                      const SizedBox(height: 32),
+
+                      // Categories Section
+                      _buildCategoriesSection(),
+                      const SizedBox(height: 32),
+
+                      // Quick Actions
+                      _buildQuickActionsSection(),
+                      const SizedBox(height: 32),
+
+                      // Favorite Providers - Dynamic from DB
+                      _buildFavoriteProvidersSection(user.uid),
+                      const SizedBox(height: 28),
+
+                      // Upcoming Bookings - Dynamic from DB
+                      _buildUpcomingBookingsSection(user.uid),
+                      const SizedBox(height: 28),
+
+                      // Available Providers - Dynamic from DB
+                      _buildAvailableProvidersSection(),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _notificationController.getUserNotifications(user.uid),
-            builder: (context, snapshot) {
-              final unreadCount = (snapshot.data ?? [])
-                  .where((n) => n['is_read'] == false)
-                  .length;
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationsPage(),
-                    ),
-                  );
-                },
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    if (unreadCount > 0)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red[400],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            unreadCount > 9 ? '9+' : '$unreadCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
+
+          // Search Results Overlay
+          if (_showSearchResults) _buildSearchResults(),
         ],
       ),
     );
@@ -409,11 +430,17 @@ class _ClientDashboardState extends State<ClientDashboard> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 24,
+                spreadRadius: 2,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -430,10 +457,10 @@ class _ClientDashboardState extends State<ClientDashboard> {
                     end: Alignment.bottomRight,
                     colors: [Colors.blue[400]!, Colors.purple[500]!],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withValues(alpha: 0.2),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -599,12 +626,12 @@ class _ClientDashboardState extends State<ClientDashboard> {
     return Container(
       decoration: BoxDecoration(
         gradient: gradient,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -616,8 +643,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icon,
@@ -721,12 +748,18 @@ class _ClientDashboardState extends State<ClientDashboard> {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.15),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 24,
+              spreadRadius: 2,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -738,8 +771,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: color, size: 24),
             ),
@@ -808,7 +841,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.notifications_rounded, size: 22),
+                          icon:
+                              const Icon(Icons.notifications_rounded, size: 22),
                           color: Colors.grey[700],
                           onPressed: () {
                             Navigator.push(
@@ -869,7 +903,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
                   color: Colors.grey[700],
                   onPressed: () async {
                     await _authController.signOut();
-                    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/', (route) => false);
                   },
                 ),
               ),
@@ -883,11 +918,17 @@ class _ClientDashboardState extends State<ClientDashboard> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 24,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -920,7 +961,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
               : null,
           border: InputBorder.none,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Colors.transparent,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 14,
             vertical: 12,
@@ -955,17 +996,26 @@ class _ClientDashboardState extends State<ClientDashboard> {
         final profileImage = data['profileImage'] ?? '';
 
         return Card(
-          elevation: 4,
+          elevation: 0,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue[50]!, Colors.blue[100]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             padding: const EdgeInsets.all(18),
             child: Row(
@@ -982,7 +1032,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
+                        color: Colors.blue.withValues(alpha: 0.25),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),
@@ -990,7 +1040,9 @@ class _ClientDashboardState extends State<ClientDashboard> {
                   ),
                   child: Center(
                     child: Text(
-                      (userName.isNotEmpty && userName.length > 0) ? userName[0].toUpperCase() : 'C',
+                      (userName.isNotEmpty && userName.length > 0)
+                          ? userName[0].toUpperCase()
+                          : 'C',
                       style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w900,
@@ -1085,11 +1137,17 @@ class _ClientDashboardState extends State<ClientDashboard> {
               return Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 12,
                       spreadRadius: 1,
                     ),
@@ -1122,33 +1180,57 @@ class _ClientDashboardState extends State<ClientDashboard> {
                     (data['booking_date'] as Timestamp).toDate();
 
                 return Card(
+                  elevation: 0,
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      child: const Icon(Icons.content_cut, color: Colors.blue),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 24,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    title: Text(data['service_name'] ?? 'Service'),
-                    subtitle: Text(
-                      '${data['provider_name']} • ${bookingDate.day}/${bookingDate.month}/${bookingDate.year}',
-                    ),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: data['status'] == 'confirmed'
-                            ? Colors.green[100]
-                            : Colors.orange[100],
-                        borderRadius: BorderRadius.circular(12),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue[100],
+                        child:
+                            const Icon(Icons.content_cut, color: Colors.blue),
                       ),
-                      child: Text(
-                        data['status']?.toUpperCase() ?? 'PENDING',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                      title: Text(data['service_name'] ?? 'Service'),
+                      subtitle: Text(
+                        '${data['provider_name']} • ${bookingDate.day}/${bookingDate.month}/${bookingDate.year}',
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
                           color: data['status'] == 'confirmed'
-                              ? Colors.green[800]
-                              : Colors.orange[800],
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          data['status']?.toUpperCase() ?? 'PENDING',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: data['status'] == 'confirmed'
+                                ? Colors.green[800]
+                                : Colors.orange[800],
+                          ),
                         ),
                       ),
                     ),
@@ -1170,8 +1252,16 @@ class _ClientDashboardState extends State<ClientDashboard> {
       {'name': 'Makeup', 'icon': Icons.face, 'color': Colors.pink},
       {'name': 'Massage', 'icon': Icons.spa, 'color': Colors.teal},
       {'name': 'Nails', 'icon': Icons.brush, 'color': Colors.red},
-      {'name': 'Facial', 'icon': Icons.face_retouching_natural, 'color': Colors.orange},
-      {'name': 'Waxing', 'icon': Icons.health_and_safety, 'color': Colors.amber},
+      {
+        'name': 'Facial',
+        'icon': Icons.face_retouching_natural,
+        'color': Colors.orange
+      },
+      {
+        'name': 'Waxing',
+        'icon': Icons.health_and_safety,
+        'color': Colors.amber
+      },
     ];
 
     return Column(
@@ -1215,16 +1305,17 @@ class _ClientDashboardState extends State<ClientDashboard> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      (category['color'] as Color).withOpacity(0.7),
-                      (category['color'] as Color),
+                      (category['color'] as Color).withValues(alpha: 0.6),
+                      (category['color'] as Color).withValues(alpha: 0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: (category['color'] as Color).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      color:
+                          (category['color'] as Color).withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -1265,7 +1356,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
         }
 
         final clientData = clientSnapshot.data!.data() as Map<String, dynamic>?;
-        final List<dynamic> favoriteIds = clientData?['favorite_providers'] ?? [];
+        final List<dynamic> favoriteIds =
+            clientData?['favorite_providers'] ?? [];
 
         if (favoriteIds.isEmpty) {
           return const SizedBox.shrink();
@@ -1306,7 +1398,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
                         );
                       }
 
-                      final data = providerSnapshot.data!.data() as Map<String, dynamic>?;
+                      final data = providerSnapshot.data!.data()
+                          as Map<String, dynamic>?;
                       if (data == null) return const SizedBox.shrink();
 
                       return GestureDetector(
@@ -1419,7 +1512,11 @@ class _ClientDashboardState extends State<ClientDashboard> {
         ),
         const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot>(
-          stream: _db.collection('providers').orderBy('rating', descending: true).limit(3).snapshots(),
+          stream: _db
+              .collection('providers')
+              .orderBy('rating', descending: true)
+              .limit(3)
+              .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -1427,7 +1524,25 @@ class _ClientDashboardState extends State<ClientDashboard> {
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
               return Card(
-                child: Padding(
+                elevation: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   padding: const EdgeInsets.all(24),
                   child: Center(
                     child: Text(
@@ -1447,7 +1562,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
                 itemBuilder: (context, index) {
                   final provider = snapshot.data!.docs[index];
                   final data = provider.data() as Map<String, dynamic>;
-                  
+
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -1473,7 +1588,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
                                 child: Text(
                                   _getInitial(data['full_name'] ?? 'P'),
                                   style: const TextStyle(
-                                      fontSize: 24, fontWeight: FontWeight.bold),
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -1492,47 +1608,49 @@ class _ClientDashboardState extends State<ClientDashboard> {
                                       size: 14, color: Colors.amber),
                                   Text(
                                     ' ${(data['rating'] ?? 0.0).toStringAsFixed(1)}',
-                                style: const TextStyle(fontSize: 11),
+                                    style: const TextStyle(fontSize: 11),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: FutureBuilder<bool>(
+                              future: _isFavorite(provider.id),
+                              builder: (context, snapshot) {
+                                final isFav = snapshot.data ?? false;
+                                return GestureDetector(
+                                  onTap: () {
+                                    _toggleFavorite(provider.id);
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 4,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      isFav
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: isFav ? Colors.red : Colors.grey,
+                                      size: 20,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: FutureBuilder<bool>(
-                          future: _isFavorite(provider.id),
-                          builder: (context, snapshot) {
-                            final isFav = snapshot.data ?? false;
-                            return GestureDetector(
-                              onTap: () {
-                                _toggleFavorite(provider.id);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  isFav ? Icons.favorite : Icons.favorite_border,
-                                  color: isFav ? Colors.red : Colors.grey,
-                                  size: 20,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
                     ),
                   );
                 },
@@ -1557,7 +1675,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
           child: GestureDetector(
             onTap: () {},
             child: Container(
-              margin: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 20),
+              margin: const EdgeInsets.only(
+                  top: 100, left: 16, right: 16, bottom: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -1605,7 +1724,8 @@ class _ClientDashboardState extends State<ClientDashboard> {
                               _searchController.clear();
                             });
                           },
-                          child: const Icon(Icons.close_rounded, color: Colors.grey),
+                          child: const Icon(Icons.close_rounded,
+                              color: Colors.grey),
                         ),
                       ],
                     ),
@@ -1642,8 +1762,11 @@ class _ClientDashboardState extends State<ClientDashboard> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(
-                                    isProvider ? Icons.person_rounded : Icons.cut_rounded,
-                                    color: isProvider ? Colors.blue : Colors.green,
+                                    isProvider
+                                        ? Icons.person_rounded
+                                        : Icons.cut_rounded,
+                                    color:
+                                        isProvider ? Colors.blue : Colors.green,
                                     size: 22,
                                   ),
                                 ),

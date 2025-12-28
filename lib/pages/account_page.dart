@@ -18,205 +18,639 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final user = _authController.getCurrentUser();
-    
+
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Account'),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          automaticallyImplyLeading: false,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.account_circle, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              const Text('Please sign in'),
+            ],
+          ),
         ),
-        body: const Center(child: Text('Please sign in')),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-      ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _db.collection('clients').doc(user.uid).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final userData = snapshot.data?.data() as Map<String, dynamic>? ?? {};
-          final userName = userData['full_name'] ?? 'Client';
-          final email = userData['email'] ?? '';
-          final phone = userData['phone'] ?? 'Not provided';
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Profile Section
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade400, Colors.blue.shade600],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: CustomScrollView(
+        slivers: [
+          // Modern App Bar
+          SliverAppBar(
+            expandedHeight: 160,
+            floating: false,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.blue[900]!, Colors.blue[800]!],
                   ),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white,
-                        child: Text(
-                          userName.isNotEmpty ? userName[0].toUpperCase() : 'C',
-                          style: const TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(28),
+                    bottomRight: Radius.circular(28),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withValues(alpha: 0.2),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: _db.collection('clients').doc(user.uid).snapshots(),
+                  builder: (context, snapshot) {
+                    final userData =
+                        snapshot.data?.data() as Map<String, dynamic>? ?? {};
+                    final userName = userData['full_name'] ?? 'Client';
+                    final email = userData['email'] ?? '';
+
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white.withValues(alpha: 0.25),
+                          child: Text(
+                            userName.isNotEmpty
+                                ? userName[0].toUpperCase()
+                                : 'C',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        userName,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        const SizedBox(height: 16),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        email,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Personal Information Section
-                _buildSectionHeader('Personal Information'),
-                _buildInfoTile(
-                  icon: Icons.person,
-                  title: 'Full Name',
-                  subtitle: userName,
-                  onTap: () => _showEditDialog('Full Name', userName, 'full_name'),
-                ),
-                _buildInfoTile(
-                  icon: Icons.email,
-                  title: 'Email',
-                  subtitle: email,
-                  onTap: null, // Email not editable
-                ),
-                _buildInfoTile(
-                  icon: Icons.phone,
-                  title: 'Phone Number',
-                  subtitle: phone,
-                  onTap: () => _showEditDialog('Phone Number', phone, 'phone'),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Settings Section
-                _buildSectionHeader('Settings'),
-                _buildSwitchTile(
-                  icon: Icons.notifications,
-                  title: 'Push Notifications',
-                  subtitle: 'Receive booking updates',
-                  value: _notificationsEnabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _notificationsEnabled = value;
-                    });
+                      ],
+                    );
                   },
                 ),
-                _buildMenuTile(
-                  icon: Icons.language,
-                  title: 'Language',
-                  subtitle: _selectedLanguage,
-                  onTap: () => _showLanguageSelector(),
-                ),
+              ),
+              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+              title: null,
+            ),
+          ),
 
-                const SizedBox(height: 16),
+          // Main Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Personal Information Section
+                  SizedBox(
+                    width: 320,
+                    child: _buildModernSection(
+                      title: 'Personal Information',
+                      children: [
+                        _buildModernInfoTile(
+                          icon: Icons.person_rounded,
+                          title: 'Full Name',
+                          subtitle: '',
+                          onTap: () =>
+                              _showEditDialog('Full Name', '', 'full_name'),
+                        ),
+                        _buildModernInfoTile(
+                          icon: Icons.email_rounded,
+                          title: 'Email',
+                          subtitle: '',
+                          onTap: null,
+                        ),
+                        _buildModernInfoTile(
+                          icon: Icons.phone_rounded,
+                          title: 'Phone Number',
+                          subtitle: '',
+                          onTap: () =>
+                              _showEditDialog('Phone Number', '', 'phone'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                // Favorite Providers Section
-                _buildSectionHeader('Favorite Providers'),
-                _buildFavoriteProviders(user.uid),
+                  // Settings Section
+                  SizedBox(
+                    width: 320,
+                    child: _buildModernSection(
+                      title: 'Settings',
+                      children: [
+                        _buildModernSwitchTile(
+                          icon: Icons.notifications_rounded,
+                          title: 'Push Notifications',
+                          subtitle: 'Receive booking updates',
+                          value: _notificationsEnabled,
+                          onChanged: (value) {
+                            setState(() {
+                              _notificationsEnabled = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildModernMenuTile(
+                          icon: Icons.language_rounded,
+                          title: 'Language',
+                          subtitle: _selectedLanguage,
+                          onTap: () => _showLanguageSelector(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                const SizedBox(height: 16),
+                  // Favorite Providers Section
+                  SizedBox(
+                    width: 320,
+                    child: _buildFavoriteProvidersSection(),
+                  ),
+                  const SizedBox(height: 24),
 
-                // Help & Support Section
-                _buildSectionHeader('Help & Support'),
-                _buildMenuTile(
-                  icon: Icons.help_outline,
-                  title: 'FAQ',
-                  subtitle: 'Frequently asked questions',
-                  onTap: () => _showFAQ(),
-                ),
-                _buildMenuTile(
-                  icon: Icons.support_agent,
-                  title: 'Contact Support',
-                  subtitle: 'Get help from our team',
-                  onTap: () => _showContactSupport(),
-                ),
-                _buildMenuTile(
-                  icon: Icons.privacy_tip,
-                  title: 'Privacy Policy',
-                  subtitle: 'Learn about our privacy practices',
-                  onTap: () => _showPrivacyPolicy(),
-                ),
-                _buildMenuTile(
-                  icon: Icons.article,
-                  title: 'Terms of Service',
-                  subtitle: 'Read our terms and conditions',
-                  onTap: () => _showTermsOfService(),
-                ),
+                  // Help & Support Section
+                  SizedBox(
+                    width: 320,
+                    child: _buildModernSection(
+                      title: 'Help & Support',
+                      children: [
+                        _buildModernMenuTile(
+                          icon: Icons.help_outline_rounded,
+                          title: 'FAQ',
+                          subtitle: 'Frequently asked questions',
+                          onTap: () => _showFAQ(),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildModernMenuTile(
+                          icon: Icons.support_agent_rounded,
+                          title: 'Contact Support',
+                          subtitle: 'Get help from our team',
+                          onTap: () => _showContactSupport(),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildModernMenuTile(
+                          icon: Icons.privacy_tip_rounded,
+                          title: 'Privacy Policy',
+                          subtitle: 'Learn about our privacy practices',
+                          onTap: () => _showPrivacyPolicy(),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildModernMenuTile(
+                          icon: Icons.article_rounded,
+                          title: 'Terms of Service',
+                          subtitle: 'Read our terms and conditions',
+                          onTap: () => _showTermsOfService(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
 
-                const SizedBox(height: 16),
-
-                // Logout Section
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
+                  // Logout Button
+                  SizedBox(
+                    width: 200,
                     child: ElevatedButton.icon(
                       onPressed: () => _showLogoutDialog(),
-                      icon: const Icon(Icons.logout),
+                      icon: const Icon(Icons.logout_rounded),
                       label: const Text('Logout'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: Colors.red[500],
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
                         ),
+                        elevation: 4,
                       ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // App Version
+                  // App Version
+                  Center(
+                    child: Text(
+                      'Version 1.0.0',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Modern Section Container
+  Widget _buildModernSection({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: List.generate(
+              children.length,
+              (index) => Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: children[index],
+                  ),
+                  if (index < children.length - 1)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Divider(
+                        height: 1,
+                        color: Colors.grey[300],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Modern Info Tile
+  Widget _buildModernInfoTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.blue[700], size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  'Version 1.0.0',
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.grey[400], size: 20),
+        ],
+      ),
+    );
+  }
+
+  // Modern Switch Tile
+  Widget _buildModernSwitchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.blue[100],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: Colors.blue[700], size: 20),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Colors.blue[700],
+        ),
+      ],
+    );
+  }
+
+  // Modern Menu Tile
+  Widget _buildModernMenuTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.blue[700], size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  subtitle,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
                   ),
                 ),
-                const SizedBox(height: 24),
               ],
             ),
-          );
-        },
+          ),
+          Icon(Icons.chevron_right_rounded, color: Colors.grey[400], size: 20),
+        ],
       ),
+    );
+  }
+
+  // Favorite Providers Section
+  Widget _buildFavoriteProvidersSection() {
+    final user = _authController.getCurrentUser();
+    if (user == null) return const SizedBox.shrink();
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _db.collection('clients').doc(user.uid).snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+        List<String> favorites = List.from(data['favorite_providers'] ?? []);
+
+        if (favorites.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'Favorite Providers',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.favorite_border_rounded,
+                        size: 48, color: Colors.grey[400]),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No favorite providers yet',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'Favorite Providers',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: favorites.length,
+                separatorBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(
+                    height: 1,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                itemBuilder: (context, index) {
+                  return FutureBuilder<DocumentSnapshot>(
+                    future:
+                        _db.collection('providers').doc(favorites[index]).get(),
+                    builder: (context, providerSnapshot) {
+                      if (providerSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      final providerData = providerSnapshot.data?.data()
+                          as Map<String, dynamic>?;
+                      final providerName =
+                          providerData?['full_name'] ?? 'Unknown';
+                      final category = providerData?['category'] ?? '';
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.blue[100],
+                              child: Text(
+                                providerName.isNotEmpty
+                                    ? providerName[0].toUpperCase()
+                                    : 'P',
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    providerName,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (category.isNotEmpty)
+                                    Text(
+                                      category,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.favorite_rounded,
+                                color: Colors.red[500], size: 20),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -275,7 +709,8 @@ class _AccountPageState extends State<AccountPage> {
         child: Icon(icon, color: Colors.blue),
       ),
       title: Text(title),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      subtitle: Text(subtitle,
+          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       value: value,
       onChanged: onChanged,
       activeThumbColor: Colors.blue,
@@ -298,7 +733,8 @@ class _AccountPageState extends State<AccountPage> {
         child: Icon(icon, color: Colors.blue),
       ),
       title: Text(title),
-      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      subtitle: Text(subtitle,
+          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
@@ -316,7 +752,8 @@ class _AccountPageState extends State<AccountPage> {
         }
 
         final clientData = snapshot.data?.data() as Map<String, dynamic>? ?? {};
-        final List<dynamic> favoriteIds = clientData['favorite_providers'] ?? [];
+        final List<dynamic> favoriteIds =
+            clientData['favorite_providers'] ?? [];
 
         if (favoriteIds.isEmpty) {
           return Padding(
@@ -324,7 +761,8 @@ class _AccountPageState extends State<AccountPage> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.favorite_border, size: 48, color: Colors.grey[400]),
+                  Icon(Icons.favorite_border,
+                      size: 48, color: Colors.grey[400]),
                   const SizedBox(height: 8),
                   Text(
                     'No favorite providers yet',
@@ -350,7 +788,9 @@ class _AccountPageState extends State<AccountPage> {
                   return const SizedBox.shrink();
                 }
 
-                final providerData = providerSnapshot.data!.data() as Map<String, dynamic>? ?? {};
+                final providerData =
+                    providerSnapshot.data!.data() as Map<String, dynamic>? ??
+                        {};
                 final providerName = providerData['full_name'] ?? 'Provider';
                 final rating = (providerData['rating'] ?? 0.0).toDouble();
 
@@ -358,7 +798,9 @@ class _AccountPageState extends State<AccountPage> {
                   leading: CircleAvatar(
                     backgroundColor: Colors.blue[100],
                     child: Text(
-                      providerName.isNotEmpty ? providerName[0].toUpperCase() : 'P',
+                      providerName.isNotEmpty
+                          ? providerName[0].toUpperCase()
+                          : 'P',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -376,14 +818,15 @@ class _AccountPageState extends State<AccountPage> {
                       // Remove from favorites array
                       List<dynamic> updatedFavorites = List.from(favoriteIds);
                       updatedFavorites.remove(providerId);
-                      
+
                       await _db.collection('clients').doc(clientId).set({
                         'favorite_providers': updatedFavorites,
                       }, SetOptions(merge: true));
-                      
+
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Removed from favorites')),
+                          const SnackBar(
+                              content: Text('Removed from favorites')),
                         );
                       }
                     },
@@ -397,7 +840,8 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  void _showEditDialog(String fieldName, String currentValue, String firestoreField) {
+  void _showEditDialog(
+      String fieldName, String currentValue, String firestoreField) {
     final controller = TextEditingController(text: currentValue);
 
     showDialog(
@@ -629,7 +1073,7 @@ class _AccountPageState extends State<AccountPage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(dialogContext); // Close dialog first
-              
+
               // Show loading indicator
               showDialog(
                 context: context,
@@ -638,9 +1082,9 @@ class _AccountPageState extends State<AccountPage> {
                   child: CircularProgressIndicator(),
                 ),
               );
-              
+
               await _authController.signOut();
-              
+
               // Navigate to welcome page
               if (mounted) {
                 Navigator.of(context).pushNamedAndRemoveUntil(
